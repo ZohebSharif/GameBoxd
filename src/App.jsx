@@ -1,26 +1,55 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import Games from './pages/Games';
+import GameDetail from './pages/GameDetail';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Lists from './pages/Lists';
+import ListDetail from './pages/ListDetail';
+import Reports from './pages/Reports';
+import { getMe, logout as apiLogout } from './api';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getMe()
+      .then((data) => setUser(data.user))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await apiLogout();
+      setUser(null);
+      navigate('/');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
+
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <>
-      <div>
-        <h1>Vite + React</h1>
+      <Navbar user={user} onLogout={handleLogout} />
+      <div className="container">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/games" element={<Games />} />
+          <Route path="/games/:id" element={<GameDetail user={user} />} />
+          <Route path="/login" element={<Login setUser={setUser} />} />
+          <Route path="/register" element={<Register setUser={setUser} />} />
+          <Route path="/lists" element={<Lists user={user} />} />
+          <Route path="/lists/:listId" element={<ListDetail user={user} />} />
+          <Route path="/reports" element={<Reports />} />
+        </Routes>
       </div>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
 }
-
-export default App
