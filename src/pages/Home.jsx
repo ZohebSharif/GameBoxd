@@ -2,6 +2,50 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getTopRated, getMostReviewed, getMostFavorited } from '../api';
 
+const ASCII_CONTROLLER = String.raw`
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                          @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.                             
+                    @@@@@@............................................@@@@@@                        
+              @@@@@@....................@@@@@@@@@@@@@@@@....................@@@@@@                  
+            @@........................@@################@@........####............@@.               
+          @@........####..............@@################@@..........................@@              
+          @@........####..............@@################@@..........................@@              
+          @@..........................@@################@@..........................@@              
+          @@............................@@@@@@@@@@@@@@@@............................@@              
+       .@@......................######....................######..............--......@@            
+       .@@...................:##......##................##......##..........------....@@            
+       .@@......####........##....##....##............##....##....##..........--......@@            
+      @@...:....####........##..######:.##............##..###*##..##....**..........++..@@.         
+      @@....####....####....##....##...:##.......:....#*....##...:##:.******......++++++@@          
+      @@....####....####......##......##......####...:..##......##......**..........++..@@          
+      @@........###*...::.......######:......:....:....:..*#####..............##........@@.         
+    @@--........####........--..........----------------..........--........######......--@@        
+    @@--........:::.......--@@----------@@@@@@@@@@@@@@@@----------@@--.......:##........--@@        
+    @@--...............:--@@..@@@@@@@@@@................@@@@@@@@@@..@@--................--@@        
+    @@--..............--@@   .         .                         .  ..@@--..............--@@        
+    @@--............--@@                                             . .@@--............--@@        
+    @@--..........--@@..                                                  @@--..........--@@        
+   .@@:-..........:-@@                                                    @@--.:........-:%@        
+      @@:-......--@@                                                       .@@--......-:@@          
+        @@------@@.                                                           @@------@@            
+          @@@@@@.                                                              .@@@@@@.             
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+`;
+
 export default function Home() {
   const [topRated, setTopRated] = useState([]);
   const [mostReviewed, setMostReviewed] = useState([]);
@@ -25,10 +69,16 @@ export default function Home() {
 
   return (
     <div>
-      <h1 className="page-title">Welcome to Gameboxd</h1>
-      <p style={{ color: '#9ab', marginBottom: '2rem' }}>
-        Track games you've played. Save those you want to play. Tell your friends what's good.
-      </p>
+      <section className="home-hero">
+        <h1 className="home-hero-title">GAMEBOXD</h1>
+        <div className="ascii-controller-wrap" aria-hidden="true">
+          <pre className="ascii-controller">{ASCII_CONTROLLER}</pre>
+        </div>
+        <p className="home-hero-slogan">
+          Track games you&apos;ve played. Save those you want to play. Tell your friends what&apos;s
+          good.
+        </p>
+      </section>
 
       <Section title="Top Rated Games" data={topRated} valueLabel="Avg Rating" valueKey="avg_rating" format={(v) => Number(v).toFixed(1)} />
       <Section title="Most Reviewed Games" data={mostReviewed} valueLabel="Reviews" valueKey="review_count" />
