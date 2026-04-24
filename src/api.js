@@ -30,6 +30,9 @@ export const getGames = (params = {}) => {
   return request(`/games${query ? `?${query}` : ''}`);
 };
 
+export const addGame = (game) =>
+  request('/games', { method: 'POST', body: JSON.stringify(game) });
+
 export const getGame = (id) =>
   request(`/games/${id}`);
 

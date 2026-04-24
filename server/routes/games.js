@@ -3,6 +3,33 @@ import pool from '../db.js';
 
 const router = Router();
 
+router.post('/', async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ error: 'Must be logged in to add a game' });
+    }
+
+    const { title, creator, cover_url, genre, platform, release_year } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: 'Title is required' });
+    }
+    if (!creator || !creator.trim()) {
+      return res.status(400).json({ error: 'Creator is required' });
+    }
+
+    const [result] = await pool.execute(
+      'INSERT INTO games (title, creator, cover_url, genre, platform, release_year) VALUES (?, ?, ?, ?, ?, ?)',
+      [title.trim(), creator.trim(), cover_url || null, genre || null, platform || null, release_year || null]
+    );
+
+    res.status(201).json({ message: 'Game added', gameId: result.insertId });
+  } catch (err) {
+    console.error('Error adding game:', err);
+    res.status(500).json({ error: 'Failed to add game' });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const { search, genre, platform } = req.query;

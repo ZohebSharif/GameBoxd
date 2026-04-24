@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getGames } from '../api';
+import { getGames, addGame } from '../api';
 
 export default function Games() {
   const [games, setGames] = useState([]);
@@ -9,6 +9,10 @@ export default function Games() {
   const [platform, setPlatform] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({ title: '', creator: '', cover_url: '', genre: '', platform: '', release_year: '' });
+  const [addError, setAddError] = useState('');
+  const [addSuccess, setAddSuccess] = useState('');
 
   const fetchGames = () => {
     setLoading(true);
@@ -28,6 +32,31 @@ export default function Games() {
   const handleSearch = (e) => {
     e.preventDefault();
     fetchGames();
+  };
+
+  const handleAddChange = (e) => {
+    setAddForm({ ...addForm, [e.target.name]: e.target.value });
+  };
+
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    setAddError('');
+    setAddSuccess('');
+    try {
+      await addGame({
+        ...addForm,
+        release_year: addForm.release_year ? Number(addForm.release_year) : null,
+      });
+      setAddSuccess('Game added!');
+      setAddForm({ title: '', creator: '', cover_url: '', genre: '', platform: '', release_year: '' });
+      fetchGames();
+      setTimeout(() => {
+        setShowAddModal(false);
+        setAddSuccess('');
+      }, 1000);
+    } catch (err) {
+      setAddError(err.message);
+    }
   };
 
   return (
@@ -62,6 +91,73 @@ export default function Games() {
         </select>
         <button className="btn btn-primary" type="submit">Search</button>
       </form>
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <button className="btn" onClick={() => setShowAddModal(true)}>
+          Don't see your game? Add here
+        </button>
+      </div>
+
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Add a Game</h3>
+            {addError && <div className="error-msg">{addError}</div>}
+            {addSuccess && <div className="success-msg">{addSuccess}</div>}
+            <form onSubmit={handleAddSubmit}>
+              <div className="form-group">
+                <label>Title *</label>
+                <input name="title" value={addForm.title} onChange={handleAddChange} required />
+              </div>
+              <div className="form-group">
+                <label>Creator / Studio *</label>
+                <input name="creator" value={addForm.creator} onChange={handleAddChange} required />
+              </div>
+              <div className="form-group">
+                <label>Cover Image URL</label>
+                <input name="cover_url" value={addForm.cover_url} onChange={handleAddChange} placeholder="https://example.com/cover.jpg" />
+              </div>
+              <div className="form-group">
+                <label>Genre</label>
+                <select name="genre" value={addForm.genre} onChange={handleAddChange}>
+                  <option value="">Select genre</option>
+                  <option value="Action">Action</option>
+                  <option value="Action-Adventure">Action-Adventure</option>
+                  <option value="Action RPG">Action RPG</option>
+                  <option value="RPG">RPG</option>
+                  <option value="Adventure">Adventure</option>
+                  <option value="Platformer">Platformer</option>
+                  <option value="Simulation">Simulation</option>
+                  <option value="Sandbox">Sandbox</option>
+                  <option value="Puzzle">Puzzle</option>
+                  <option value="Roguelike">Roguelike</option>
+                  <option value="Metroidvania">Metroidvania</option>
+                  <option value="Indie">Indie</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Platform</label>
+                <select name="platform" value={addForm.platform} onChange={handleAddChange}>
+                  <option value="">Select platform</option>
+                  <option value="PC">PC</option>
+                  <option value="PlayStation">PlayStation</option>
+                  <option value="Xbox">Xbox</option>
+                  <option value="Nintendo Switch">Nintendo Switch</option>
+                  <option value="Multi-platform">Multi-platform</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Release Year</label>
+                <input name="release_year" type="number" value={addForm.release_year} onChange={handleAddChange} placeholder="2024" />
+              </div>
+              <div style={{ display: 'flex', gap: '0.8rem', marginTop: '1rem' }}>
+                <button className="btn btn-primary" type="submit">Add Game</button>
+                <button className="btn" type="button" onClick={() => setShowAddModal(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {error && <div className="error-msg">{error}</div>}
       {loading ? (
