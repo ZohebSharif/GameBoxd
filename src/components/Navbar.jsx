@@ -22,7 +22,6 @@ export default function Navbar({ user, onLogout }) {
         ) : (
           <>
             <Link to="/login" className={isActive('/login')}>Login</Link>
-            <Link to="/register" className={isActive('/register')}>Register</Link>
           </>
         )}
       </nav>
