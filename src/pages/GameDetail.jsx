@@ -6,6 +6,7 @@ export default function GameDetail({ user }) {
   const { id } = useParams();
   const [game, setGame] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [steamReviews, setSteamReviews] = useState([]);
   const [userRating, setUserRating] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -34,6 +35,7 @@ export default function GameDetail({ user }) {
       .then((data) => {
         setGame(data.game);
         setReviews(data.reviews);
+        setSteamReviews(data.steamReviews || []);
         setUserRating(data.userRating);
         setIsFavorited(data.isFavorited);
       })
@@ -125,6 +127,15 @@ export default function GameDetail({ user }) {
           <div className="meta-row">Genre: <span>{game.genre || 'N/A'}</span></div>
           <div className="meta-row">Platform: <span>{game.platform || 'N/A'}</span></div>
           <div className="meta-row">Release Year: <span>{game.release_year || 'N/A'}</span></div>
+          {game.steam_app_id && (
+            <div className="meta-row">
+              Steam Reviews:{' '}
+              <span>
+                {game.steam_review_score_desc || 'No Steam reviews'}{' '}
+                {game.steam_total_reviews ? `(${Number(game.steam_total_reviews).toLocaleString()})` : ''}
+              </span>
+            </div>
+          )}
           <div className="meta-row">
             Ratings: <span>{game.rating_count || 0}</span>
           </div>
@@ -204,6 +215,25 @@ export default function GameDetail({ user }) {
           ))
         )}
       </div>
+
+      {steamReviews.length > 0 && (
+        <div className="reviews-section">
+          <h2 className="page-title">Steam Reviews ({steamReviews.length})</h2>
+          {steamReviews.map((rev) => (
+            <div className="review-card" key={rev.recommendation_id}>
+              <div className="review-header">
+                <span className="review-author">
+                  {rev.voted_up ? 'Recommended on Steam' : 'Not Recommended on Steam'}
+                </span>
+                <span className="review-date">
+                  {rev.steam_created_at ? new Date(rev.steam_created_at).toLocaleDateString() : 'Steam'}
+                </span>
+              </div>
+              <p className="review-text">{rev.review}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Add to List Modal */}
       {showListModal && (

@@ -180,6 +180,9 @@ export default function Games() {
                   {game.avg_rating > 0 && (
                     <span className="game-card-rating">★ {Number(game.avg_rating).toFixed(1)}</span>
                   )}
+                  {game.avg_rating <= 0 && game.steam_review_score_desc && (
+                    <span className="game-card-rating">Steam: {game.steam_review_score_desc}</span>
+                  )}
                 </div>
               </div>
             </Link>

@@ -34,7 +34,7 @@ mysql -u root -p
 # Run the schema (creates database + tables)
 source /path/to/GameBoxd/database/schema.sql;
 
-# Run the seed data
+# Run the seed data placeholder
 source /path/to/GameBoxd/database/seed.sql;
 ```
 
@@ -44,13 +44,31 @@ mysql -u root -p < database/schema.sql
 mysql -u root -p < database/seed.sql
 ```
 
+The seed file no longer inserts mock games. Use the Steam sync command below to populate real Steam game data.
+
 ### 2. Configure Database Connection
 
-Edit `server/db.js` if your MySQL credentials differ from the defaults:
-- Host: `localhost`
-- User: `root`
-- Password: `""` (empty)
-- Database: `gameboxd`
+Copy `server/.env.example` to `server/.env` and set your local values:
+
+```bash
+cp server/.env.example server/.env
+```
+
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_mysql_password_here
+DB_NAME=gameboxd
+```
+
+Optional Steam sync settings:
+
+```env
+STEAM_WEB_API_KEY=
+STEAM_SYNC_LIMIT=25
+STEAM_SYNC_REVIEW_LIMIT=20
+STEAM_SYNC_DELAY_MS=1500
+```
 
 ### 3. Install Dependencies
 
@@ -64,7 +82,36 @@ cd server
 npm install
 ```
 
-### 4. Start the Application
+### 4. Sync Steam Data
+
+From the `server` folder, run:
+
+```bash
+npm run sync:steam -- --limit=25 --reviews=20
+```
+
+Useful options:
+
+```bash
+# Sync specific Steam app IDs
+npm run sync:steam -- --appids=570,730,367520 --reviews=20
+
+# Sync all apps returned by Steam. This can take a very long time.
+npm run sync:steam -- --all --reviews=20
+
+# Sync metadata only, with no review text
+npm run sync:steam -- --limit=100 --reviews=0
+```
+
+For daily updates, schedule the command with cron or your deployment platform's scheduler. Example local cron entry:
+
+```cron
+0 3 * * * cd /path/to/GameBoxd/server && npm run sync:steam -- --all --reviews=20 >> steam-sync.log 2>&1
+```
+
+Steam's full catalog is large, so the first `--all` sync may run for many hours. A Steam Web API key is recommended for the newer app-list endpoint.
+
+### 5. Start the Application
 
 Open **two terminals**:
 
@@ -82,16 +129,11 @@ npm run dev
 # App runs on http://localhost:5173
 ```
 
-### 5. Open the App
+### 6. Open the App
 
 Visit **http://localhost:5173** in your browser.
 
-**Seed user credentials (all use password `password123`):**
-- `gamer_alex`
-- `pixel_queen`
-- `dark_souls_fan`
-- `indie_hunter`
-- `retro_mike`
+Steam data sync populates the game catalog. Users can still register through the app.
 
 ## Features
 
@@ -141,11 +183,13 @@ The app is responsive via CSS media queries:
 GameBoxd/
 ├── database/
 │   ├── schema.sql          # Database tables
-│   └── seed.sql            # Sample data
+│   └── seed.sql            # Steam sync placeholder
 ├── server/
 │   ├── package.json
 │   ├── server.js           # Express entry point
 │   ├── db.js               # MySQL connection pool
+│   ├── scripts/
+│   │   └── syncSteam.js     # Steam catalog and review sync
 │   └── routes/
 │       ├── auth.js          # Register, login, logout
 │       ├── games.js         # Games CRUD, reviews, ratings, favorites

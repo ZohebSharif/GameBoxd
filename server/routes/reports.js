@@ -21,9 +21,10 @@ router.get('/top-rated', async (req, res) => {
 router.get('/most-reviewed', async (req, res) => {
   try {
     const [rows] = await pool.execute(
-      `SELECT g.title, g.game_id, COUNT(rev.review_id) as review_count
-       FROM games g JOIN reviews rev ON g.game_id = rev.game_id
-       GROUP BY g.game_id ORDER BY review_count DESC LIMIT 10`
+      `SELECT g.title, g.game_id, COUNT(rev.review_id) + COALESCE(g.steam_total_reviews, 0) as review_count
+       FROM games g LEFT JOIN reviews rev ON g.game_id = rev.game_id
+       GROUP BY g.game_id HAVING review_count > 0
+       ORDER BY review_count DESC LIMIT 10`
     );
     res.json(rows);
   } catch (err) {
