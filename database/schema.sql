@@ -12,12 +12,20 @@ CREATE TABLE users (
 
 CREATE TABLE games (
     game_id INT AUTO_INCREMENT PRIMARY KEY,
+    steam_app_id INT UNIQUE,
     title VARCHAR(150) NOT NULL,
     creator VARCHAR(100) NOT NULL,
     cover_url VARCHAR(255),
     genre VARCHAR(50),
     platform VARCHAR(50),
-    release_year INT
+    release_year INT,
+    steam_last_modified INT,
+    steam_review_score INT,
+    steam_review_score_desc VARCHAR(100),
+    steam_total_positive INT NOT NULL DEFAULT 0,
+    steam_total_negative INT NOT NULL DEFAULT 0,
+    steam_total_reviews INT NOT NULL DEFAULT 0,
+    steam_synced_at DATETIME NULL
 );
 
 CREATE TABLE reviews (
@@ -65,4 +73,33 @@ CREATE TABLE favorites (
     PRIMARY KEY (user_id, game_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (game_id) REFERENCES games(game_id)
+);
+
+CREATE TABLE steam_reviews (
+    steam_review_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    game_id INT NOT NULL,
+    recommendation_id VARCHAR(32) NOT NULL UNIQUE,
+    author_steamid VARCHAR(32),
+    review TEXT,
+    language VARCHAR(20),
+    voted_up BOOLEAN,
+    votes_up INT NOT NULL DEFAULT 0,
+    votes_funny INT NOT NULL DEFAULT 0,
+    weighted_vote_score DECIMAL(10,8),
+    steam_created_at DATETIME,
+    steam_updated_at DATETIME,
+    synced_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (game_id) REFERENCES games(game_id)
+);
+
+CREATE TABLE steam_sync_runs (
+    sync_run_id INT AUTO_INCREMENT PRIMARY KEY,
+    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    finished_at DATETIME NULL,
+    status ENUM('running', 'success', 'failed') NOT NULL DEFAULT 'running',
+    games_seen INT NOT NULL DEFAULT 0,
+    games_imported INT NOT NULL DEFAULT 0,
+    games_updated INT NOT NULL DEFAULT 0,
+    reviews_imported INT NOT NULL DEFAULT 0,
+    error_message TEXT
 );

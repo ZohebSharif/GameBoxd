@@ -86,6 +86,12 @@ router.get('/:id', async (req, res) => {
       [id]
     );
 
+    const [steamReviews] = await pool.execute(
+      `SELECT * FROM steam_reviews
+       WHERE game_id = ? ORDER BY steam_created_at DESC LIMIT 10`,
+      [id]
+    );
+
     let userRating = null;
     let isFavorited = false;
 
@@ -103,7 +109,7 @@ router.get('/:id', async (req, res) => {
       isFavorited = favorites.length > 0;
     }
 
-    res.json({ game: games[0], reviews, userRating, isFavorited });
+    res.json({ game: games[0], reviews, steamReviews, userRating, isFavorited });
   } catch (err) {
     console.error('Error fetching game:', err);
     res.status(500).json({ error: 'Failed to fetch game details' });
